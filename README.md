@@ -15,22 +15,33 @@ The scheduler can be configured to add a default schedule tag to instances it fi
 It ignores instances that are part of autoscaling groups assumed scheduling actions can be used to stop and start these instances.
 
 
-## Prerequisites
+## Requirements
 
-* Terraform
+This module requires Terraform version `0.10.x` or newer.
 
-## Install
+## Dependencies
 
-* terraform apply   (run terraform to deploy)
+This module depends on a correctly configured [AWS Provider](https://www.terraform.io/docs/providers/aws/index.html) in your Terraform codebase.
 
+## Usage
 
+```
+module "lambda-scheduler" {
+  source = "neillturner/lambda-scheduler/aws"
+  version = "0.1.1"
+  tag = "schedule"
+  schedule_tag_force = true
+  default = "{"mon": {"start": 7, "stop": 20},"tue": {"start": 7, "stop": 20},"wed": {"start": 7, "stop": 20},"thu": {"start": 7, "stop": 20}, "fri": {"start": 7, "stop": 20}}
+"
+  time = "local"
+}
+```
 ## variables
 
 ### schedule_expression
 The aws cloudwatch event rule schedule expression that specifies when the scheduler runs. Default = "cron(5 * * * ? *)"  i.e. 5 minuts past the hour. for debugging use "rate(5 minutes)" See
-```
-https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
-```
+
+[ScheduledEvents](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html}
 
 ### tag
 The tag name used on the EC2 instance to contain the schedule json string for the instance. default is 'schedule'
