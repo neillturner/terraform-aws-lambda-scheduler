@@ -32,8 +32,7 @@ module "lambda-scheduler" {
   schedule_expression = "cron(5 * * * ? *)"
   tag = "schedule"
   schedule_tag_force = true
-  default = "\{\"mon": {\"start\": 7, \"stop\": 20},\"tue\": {\"start\": 7, \"stop\": 20},\"wed\": {\"start\": 7, \"stop\": 20},\"thu\": {\"start\": 7, \"stop\": 20}, \"fri\": {\"start\": 7, \"stop\": 20}}
-"
+  default = "\{\"mon": {\"start\": 7, \"stop\": 20},\"tue\": {\"start\": 7, \"stop\": 20},\"wed\": {\"start\": 7, \"stop\": 20},\"thu\": {\"start\": 7, \"stop\": 20}, \"fri\": {\"start\": 7, \"stop\": 20}}"
   time = "local"
 }
 ```
