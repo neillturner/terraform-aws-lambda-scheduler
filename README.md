@@ -41,7 +41,7 @@ module "lambda-scheduler" {
 ### schedule_expression
 The aws cloudwatch event rule schedule expression that specifies when the scheduler runs. Default = "cron(5 * * * ? *)"  i.e. 5 minuts past the hour. for debugging use "rate(5 minutes)" See
 
-[ScheduledEvents](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html}
+[ScheduledEvents](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html)
 
 ### tag
 The tag name used on the EC2 instance to contain the schedule json string for the instance. default is 'schedule'
