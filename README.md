@@ -1,9 +1,9 @@
 # terraform-aws-lambda-scheduler
-Stop and start server instances according to schedule via lambda and terraform.
+Stop and start EC2 instances according to schedule via lambda and terraform.
 
 # Overview
 
-The scheduler works by looking at the json on the schedule tag to see if it needs to stop of start and instance.
+The scheduler looks at the json on the schedule tag to see if it needs to stop or start and instance.
 It works by setting a tag (default name schedule) to a json string giving the stop and start time hour for each day.
 
 A schedule tag json looks like:
@@ -12,7 +12,7 @@ A schedule tag json looks like:
 ```
 
 The scheduler can be configured to add a default schedule tag to instances it finds without a schedule tag.
-It ignores instances that are part of autoscaling groups assumed scheduling actions can be used to stop and start these instances.
+It ignores instances that are part of autoscaling groups assuming scheduling actions can be used to stop and start these instances.
 
 
 ## Requirements
@@ -47,7 +47,7 @@ Default = "cron(5 * * * ? *)"  i.e. 5 minuts past the hour. for debugging use "r
 The tag name used on the EC2 instance to contain the schedule json string for the instance. default is 'schedule'
 
 ### schedule_tag_force
-Whether to force the EC2 instance to have the default schedule tag is no schedule tag exists for the instance.
+Whether to force the EC2 instance to have the default schedule tag if no schedule tag exists for the instance.
 
 Default is false. If set to true it with create a default schedule tag for each instance it finds.
 
@@ -68,8 +68,8 @@ Timezone to use for scheduler. Can be 'local' or 'gmt'.
 Default is gmt. local time is for the AWS region.
 
 ### security_group_ids
-list of the vpc security groups to run lambda scheduler in. Defaults to [].
+list of the vpc security groups to run lambda scheduler in. Defaults to []. Usually this is sufficent.
 
 ### subnet_ids
-list of subnet_ids that the scheduler runs in. Defaults to [].
+list of subnet_ids that the scheduler runs in. Defaults to []. Usually this is sufficent.
 
