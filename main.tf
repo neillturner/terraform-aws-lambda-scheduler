@@ -39,7 +39,12 @@ data "aws_iam_policy_document" "ec2-access-scheduler" {
             "ec2:DescribeInstances",
             "ec2:StopInstances",
             "ec2:StartInstances",
-            "ec2:CreateTags"
+            "ec2:CreateTags",
+            "rds:DescribeDBInstances",
+            "rds:StartDBInstance",
+            "rds:StopDBInstance",
+            "rds:ListTagsForResource",
+            "rds:AddTagsToResource"
         ]
         resources = [
             "*",
@@ -98,7 +103,7 @@ resource "aws_lambda_function" "scheduler_lambda" {
     role = "${aws_iam_role.scheduler_lambda.arn}"
     handler = "aws-scheduler.handler"
     runtime = "python2.7"
-    timeout = 10
+    timeout = 300
     source_code_hash = "${base64sha256(file("${path.module}/package/aws-scheduler.zip"))}"
     vpc_config = {
       security_group_ids = "${var.security_group_ids}"
@@ -111,6 +116,8 @@ resource "aws_lambda_function" "scheduler_lambda" {
         EXCLUDE = "${var.exclude}"
         DEFAULT = "${var.default}"
         TIME = "${var.time}"
+        RDS_SCHEDULE = "${var.rds_schedule}"
+        EC2_SCHEDULE = "${var.ec2_schedule}"
       }
     }
 }

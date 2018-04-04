@@ -9,13 +9,14 @@ variable "tag" {
 }
 
 variable "schedule_tag_force" {
-  default = false
+  type = "string"
+  default = "false"
   description = "Whether to force the EC2 or RDS instance to have the default schedule tag is no schedule tag exists for the instance."
 }
 
 variable "exclude" {
   default = ""
-  description = "common separated list of instance ids to exclude from scheduling."
+  description = "common separated list of EC2 and RDS instance ids to exclude from scheduling."
 }
 
 variable "default" {
@@ -26,6 +27,18 @@ variable "default" {
 variable "time" {
   default = "gmt"
   description = "timezone to use for scheduler. Can be 'local' or 'gmt'. Default is gmt. local time is for the AWS region."
+}
+
+variable "ec2_schedule" {
+  type = "string"
+  default = "true"
+  description = "Whether to do scheduling for EC2 instances."
+}
+
+variable "rds_schedule" {
+  type = "string"
+  default = "true"
+  description = "Whether to do scheduling for RDS instances."
 }
 
 variable "security_group_ids" {
@@ -39,4 +52,3 @@ variable "subnet_ids" {
   default = []
   description = "list of subnet_ids that the scheduler runs in."
 }
-
