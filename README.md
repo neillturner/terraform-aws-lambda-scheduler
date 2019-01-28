@@ -34,7 +34,7 @@ This module depends on a correctly configured [AWS Provider](https://www.terrafo
 ```
 module "lambda-scheduler" {
   source = "neillturner/lambda-scheduler/aws"
-  version = "0.3.0"
+  version = "0.x.0"
   schedule_expression = "cron(5 * * * ? *)"
   tag = "schedule"
   schedule_tag_force = "true"
