@@ -96,15 +96,22 @@ resource "aws_iam_role_policy_attachment" "basic-exec-role" {
     policy_arn = "${aws_iam_policy.scheduler_aws_lambda_basic_execution_role.arn}"
 }
 
+# AWS Lambda need a zip file
+data "archive_file" "aws-scheduler" {
+  type        = "zip"
+  source_file = "${path.module}/package/aws-scheduler.py"
+  output_path = "${path.module}/package/aws-scheduler.zip"
+}
+
 # AWS Lambda function
 resource "aws_lambda_function" "scheduler_lambda" {
-    filename = "${path.module}/package/aws-scheduler.zip"
+    filename = "${data.archive_file.aws-scheduler.output_path}"
     function_name = "aws-scheduler"
     role = "${aws_iam_role.scheduler_lambda.arn}"
     handler = "aws-scheduler.handler"
     runtime = "python2.7"
     timeout = 300
-    source_code_hash = "${base64sha256(file("${path.module}/package/aws-scheduler.zip"))}"
+    source_code_hash = "${data.archive_file.aws-scheduler.output_base64sha256}"
     vpc_config = {
       security_group_ids = "${var.security_group_ids}"
       subnet_ids = "${var.subnet_ids}"
