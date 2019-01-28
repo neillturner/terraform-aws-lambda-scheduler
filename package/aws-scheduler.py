@@ -192,11 +192,11 @@ def rds_check():
     # Get current day + hour (using gmt by default if time parameter not set to local)
     time_zone =  os.getenv('TIME', 'gmt')
     if time_zone == 'local':
-        hh  = int(time.strftime("%H", time.localtime()))
+        hh  = time.strftime("%H", time.localtime())
         day = time.strftime("%a", time.localtime()).lower()
         logger.info("-----> Checking for RDS instances to start or stop for 'local time' hour \"%s\"", hh)
     else:
-        hh  = int(time.strftime("%H", time.gmtime()))
+        hh  = time.strftime("%H", time.gmtime())
         day = time.strftime("%a", time.gmtime()).lower()
         logger.info("-----> Checking for RDS instances to start or stop for 'gmt' hour \"%s\"", hh)
 

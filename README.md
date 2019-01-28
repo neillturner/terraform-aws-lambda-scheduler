@@ -40,7 +40,7 @@ module "lambda-scheduler" {
   schedule_tag_force = "true"
   ec2_schedule = "true"
   rds_schedule = "true"
-  default = "\{\"mon": {\"start\": 7, \"stop\": 20},\"tue\": {\"start\": 7, \"stop\": 20},\"wed\": {\"start\": 7, \"stop\": 20},\"thu\": {\"start\": 7, \"stop\": 20}, \"fri\": {\"start\": 7, \"stop\": 20}}"
+  default = "{\"mon\": {\"start\": 7, \"stop\": 20},\"tue\": {\"start\": 7, \"stop\": 20},\"wed\": {\"start\": 7, \"stop\": 20},\"thu\": {\"start\": 7, \"stop\": 20}, \"fri\": {\"start\": 7, \"stop\": 20}}"
   time = "local"
 }
 ```
@@ -95,4 +95,3 @@ list of the vpc security groups to run lambda scheduler in. Defaults to []. Usua
 
 ### subnet_ids
 list of subnet_ids that the scheduler runs in. Defaults to []. Usually this does not need to be specified.
-
