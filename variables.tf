@@ -26,7 +26,7 @@ variable "default" {
 
 variable "time" {
   default = "gmt"
-  description = "timezone to use for scheduler. Can be 'local' or 'gmt'. Default is gmt. local time is for the AWS region."
+  description = "timezone to use for scheduler. Can be 'local', 'gmt' or an Olson timezone from https://gist.github.com/ykessler/3349954. default is 'gmt'. local time is for the AWS region."
 }
 
 variable "ec2_schedule" {

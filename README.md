@@ -41,7 +41,7 @@ module "lambda-scheduler" {
   ec2_schedule = "true"
   rds_schedule = "true"
   default = "{\"mon\": {\"start\": 7, \"stop\": 20},\"tue\": {\"start\": 7, \"stop\": 20},\"wed\": {\"start\": 7, \"stop\": 20},\"thu\": {\"start\": 7, \"stop\": 20}, \"fri\": {\"start\": 7, \"stop\": 20}}"
-  time = "local"
+  time = "Europe/London"
 }
 ```
 ## variables
@@ -77,7 +77,7 @@ Default for default is:
 ```
 
 ### time
-Timezone to use for scheduler. Can be 'local' or 'gmt'. default is 'gmt'.
+Timezone to use for scheduler. Can be 'local', 'gmt' or an Olson timezone from https://gist.github.com/ykessler/3349954. default is 'gmt'. local time is for the AWS region.
 
 ### ec2_schedule
 
@@ -85,10 +85,8 @@ Whether to do scheduling for EC2 instances. default = "true".
 
 ### rds_schedule
 
-Whether to do scheduling for RDS instances. default = "true",
-}
+Whether to do scheduling for RDS instances. default = "true".
 
-Default is gmt. local time is for the AWS region.
 
 ### security_group_ids
 list of the vpc security groups to run lambda scheduler in. Defaults to []. Usually this does not need to be specified.

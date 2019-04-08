@@ -1,7 +1,6 @@
 import boto3
 
-import sys, os, json, logging, datetime, time
-
+import sys, os, json, logging, datetime, time, pytz
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -73,10 +72,22 @@ def check():
         hh  = int(time.strftime("%H", time.localtime()))
         day = time.strftime("%a", time.localtime()).lower()
         logger.info("-----> Checking for EC2 instances to start or stop for 'local time' hour \"%s\"", hh)
-    else:
+    elif time_zone == 'gmt':
         hh  = int(time.strftime("%H", time.gmtime()))
         day = time.strftime("%a", time.gmtime()).lower()
         logger.info("-----> Checking for EC2 instances to start or stop for 'gmt' hour \"%s\"", hh)
+    else:
+        if time_zone in pytz.all_timezones:
+            d = datetime.datetime.now()
+            d = pytz.utc.localize(d)
+            req_timezone = pytz.timezone(time_zone)
+            d_req_timezone = d.astimezone(req_timezone)
+            hh = d_req_timezone.strftime("%H")
+            day = d_req_timezone.strftime("%a")
+            logger.info("-----> Checking for EC2 instances to start or stop for  '" + time_zone + "' hour " + hh)
+        else:
+            logger.error('Invalid time timezone string value \"%s\", please check!' %(time_zone))
+            raise ValueError('Invalid time timezone string value')
 
     started = []
     stopped = []
@@ -195,10 +206,22 @@ def rds_check():
         hh  = time.strftime("%H", time.localtime())
         day = time.strftime("%a", time.localtime()).lower()
         logger.info("-----> Checking for RDS instances to start or stop for 'local time' hour \"%s\"", hh)
-    else:
+    elif time_zone == 'gmt':
         hh  = time.strftime("%H", time.gmtime())
         day = time.strftime("%a", time.gmtime()).lower()
         logger.info("-----> Checking for RDS instances to start or stop for 'gmt' hour \"%s\"", hh)
+    else:
+        if time_zone in pytz.all_timezones:
+            d = datetime.datetime.now()
+            d = pytz.utc.localize(d)
+            req_timezone = pytz.timezone(time_zone)
+            d_req_timezone = d.astimezone(req_timezone)
+            hh = d_req_timezone.strftime("%H")
+            day = d_req_timezone.strftime("%a")
+            logger.info("-----> Checking for RDS instances to start or stop for  '" + time_zone + "' hour " + hh)
+        else:
+            logger.error('Invalid time timezone string value \"%s\", please check!' %(time_zone))
+            raise ValueError('Invalid time timezone string value')
 
     started = []
     stopped = []

@@ -99,8 +99,8 @@ resource "aws_iam_role_policy_attachment" "basic-exec-role" {
 # AWS Lambda need a zip file
 data "archive_file" "aws-scheduler" {
   type        = "zip"
-  source_file = "${path.module}/package/aws-scheduler.py"
-  output_path = "${path.module}/package/aws-scheduler.zip"
+  source_dir = "${path.module}/package"
+  output_path = "${path.module}/aws-scheduler.zip"
 }
 
 # AWS Lambda function
