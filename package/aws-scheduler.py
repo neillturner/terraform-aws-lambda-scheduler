@@ -71,20 +71,20 @@ def check():
     if time_zone == 'local':
         hh  = int(time.strftime("%H", time.localtime()))
         day = time.strftime("%a", time.localtime()).lower()
-        logger.info("-----> Checking for EC2 instances to start or stop for 'local time' hour \"%s\"", hh)
+        logger.info("-----> Checking for EC2 instances to start or stop for 'day' " + day + " 'local time' hour " + str(hh))
     elif time_zone == 'gmt':
         hh  = int(time.strftime("%H", time.gmtime()))
         day = time.strftime("%a", time.gmtime()).lower()
-        logger.info("-----> Checking for EC2 instances to start or stop for 'gmt' hour \"%s\"", hh)
+        logger.info("-----> Checking for EC2 instances to start or stop for 'day' " + day + " 'gmt' hour " + str(hh))
     else:
         if time_zone in pytz.all_timezones:
             d = datetime.datetime.now()
             d = pytz.utc.localize(d)
             req_timezone = pytz.timezone(time_zone)
             d_req_timezone = d.astimezone(req_timezone)
-            hh = d_req_timezone.strftime("%H")
-            day = d_req_timezone.strftime("%a")
-            logger.info("-----> Checking for EC2 instances to start or stop for  '" + time_zone + "' hour " + hh)
+            hh = int(d_req_timezone.strftime("%H"))
+            day = d_req_timezone.strftime("%a").lower()
+            logger.info("-----> Checking for EC2 instances to start or stop for 'day' " + day + " '" + time_zone + "' hour " + str(hh))
         else:
             logger.error('Invalid time timezone string value \"%s\", please check!' %(time_zone))
             raise ValueError('Invalid time timezone string value')
@@ -113,21 +113,25 @@ def check():
             schedule = json.loads(data)
 
             try:
+                if hh == schedule[day]['start']:
+                    logger.info("Start time matches")
                 if hh == schedule[day]['start'] and not instance.state["Name"] == 'running':
                     logger.info("Starting EC2 instance \"%s\"." %(instance.id))
                     started.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).start()
-            except:
+            except Exception as e:
+                logger.error("Error checking start time : %s" % e)
                 pass # catch exception if 'start' is not in schedule.
 
             try:
                 if hh == schedule[day]['stop']:
-                    logger.info("Stopping time matches")
+                    logger.info("Stop time matches")
                 if hh == schedule[day]['stop'] and instance.state["Name"] == 'running':
                     logger.info("Stopping EC2 instance \"%s\"." %(instance.id))
                     stopped.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).stop()
-            except:
+            except Exception as e:
+                logger.error("Error checking stop time : %s" % e)
                 pass # catch exception if 'stop' is not in schedule.
 
 
@@ -205,11 +209,11 @@ def rds_check():
     if time_zone == 'local':
         hh  = time.strftime("%H", time.localtime())
         day = time.strftime("%a", time.localtime()).lower()
-        logger.info("-----> Checking for RDS instances to start or stop for 'local time' hour \"%s\"", hh)
+        logger.info("-----> Checking for EC2 instances to start or stop for 'day' " + day + " 'local time' hour " + hh)
     elif time_zone == 'gmt':
         hh  = time.strftime("%H", time.gmtime())
         day = time.strftime("%a", time.gmtime()).lower()
-        logger.info("-----> Checking for RDS instances to start or stop for 'gmt' hour \"%s\"", hh)
+        logger.info("-----> Checking for EC2 instances to start or stop for 'day' " + day + " 'gmt' hour " + hh)
     else:
         if time_zone in pytz.all_timezones:
             d = datetime.datetime.now()
@@ -217,8 +221,8 @@ def rds_check():
             req_timezone = pytz.timezone(time_zone)
             d_req_timezone = d.astimezone(req_timezone)
             hh = d_req_timezone.strftime("%H")
-            day = d_req_timezone.strftime("%a")
-            logger.info("-----> Checking for RDS instances to start or stop for  '" + time_zone + "' hour " + hh)
+            day = d_req_timezone.strftime("%a").lower()
+            logger.info("-----> Checking for EC2 instances to start or stop for 'day' " + day + " '" + time_zone + "' hour " + hh)
         else:
             logger.error('Invalid time timezone string value \"%s\", please check!' %(time_zone))
             raise ValueError('Invalid time timezone string value')
