@@ -115,6 +115,8 @@ def check():
             try:
                 if hh == schedule[day]['start']:
                     logger.info("Start time matches")
+                if instance.state["Name"] == 'running':
+                    logger.info("EC2 instance \"%s\" is already running." %(instance.id))
                 if hh == schedule[day]['start'] and not instance.state["Name"] == 'running':
                     logger.info("Starting EC2 instance \"%s\"." %(instance.id))
                     started.append(instance.id)
@@ -126,6 +128,8 @@ def check():
             try:
                 if hh == schedule[day]['stop']:
                     logger.info("Stop time matches")
+                if instance.state["Name"] != 'running':
+                    logger.info("EC2 instance \"%s\" is not running." %(instance.id))
                 if hh == schedule[day]['stop'] and instance.state["Name"] == 'running':
                     logger.info("Stopping EC2 instance \"%s\"." %(instance.id))
                     stopped.append(instance.id)
