@@ -112,7 +112,7 @@ resource "aws_lambda_function" "scheduler_lambda" {
     runtime = "python2.7"
     timeout = 300
     source_code_hash = "${data.archive_file.aws-scheduler.output_base64sha256}"
-    vpc_config = {
+    vpc_config {
       security_group_ids = "${var.security_group_ids}"
       subnet_ids = "${var.subnet_ids}"
     }
