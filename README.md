@@ -80,16 +80,16 @@ Default for default is:
 Timezone to use for scheduler. Can be 'local', 'gmt' or an Olson timezone from https://gist.github.com/ykessler/3349954. default is 'gmt'. local time is for the AWS region.
 
 ### ec2_schedule
-
 Whether to do scheduling for EC2 instances. default = "true".
 
 ### rds_schedule
-
 Whether to do scheduling for RDS instances. default = "true".
-
 
 ### security_group_ids
 list of the vpc security groups to run lambda scheduler in. Defaults to []. Usually this does not need to be specified.
 
 ### subnet_ids
 list of subnet_ids that the scheduler runs in. Defaults to []. Usually this does not need to be specified.
+
+### resource_name_prefix
+The prefix to apply to resource names. E.g. setting this to `cluster1-` will create the Lambda as `cluster1-aws-scheduler` rather than `aws-schedule`. default = "".
