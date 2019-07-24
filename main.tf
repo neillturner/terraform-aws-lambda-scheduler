@@ -1,6 +1,6 @@
 # Cloudwatch event rule
 resource "aws_cloudwatch_event_rule" "check-scheduler-event" {
-    name = "check-scheduler-event"
+    name = "${var.resource_name_prefix}check-scheduler-event"
     description = "check-scheduler-event"
     schedule_expression = "${var.schedule_expression}"
     depends_on = ["aws_lambda_function.scheduler_lambda"]
@@ -15,7 +15,7 @@ resource "aws_cloudwatch_event_target" "check-scheduler-event-lambda-target" {
 
 # IAM Role for Lambda function
 resource "aws_iam_role" "scheduler_lambda" {
-    name = "scheduler_lambda"
+    name = "${var.resource_name_prefix}scheduler_lambda"
     assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "ec2-access-scheduler" {
 }
 
 resource "aws_iam_policy" "ec2-access-scheduler" {
-    name = "ec2-access-scheduler"
+    name = "${var.resource_name_prefix}ec2-access-scheduler"
     path = "/"
     policy = "${data.aws_iam_policy_document.ec2-access-scheduler.json}"
 }
@@ -66,7 +66,7 @@ resource "aws_iam_role_policy_attachment" "ec2-access-scheduler" {
 ## create custom role
 
 resource "aws_iam_policy" "scheduler_aws_lambda_basic_execution_role" {
-  name        = "scheduler_aws_lambda_basic_execution_role"
+  name        = "${var.resource_name_prefix}scheduler_aws_lambda_basic_execution_role"
   path        = "/"
   description = "AWSLambdaBasicExecutionRole"
 
@@ -106,7 +106,7 @@ data "archive_file" "aws-scheduler" {
 # AWS Lambda function
 resource "aws_lambda_function" "scheduler_lambda" {
     filename = "${data.archive_file.aws-scheduler.output_path}"
-    function_name = "aws-scheduler"
+    function_name = "${var.resource_name_prefix}aws-scheduler"
     role = "${aws_iam_role.scheduler_lambda.arn}"
     handler = "aws-scheduler.handler"
     runtime = "python2.7"
