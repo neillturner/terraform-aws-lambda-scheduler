@@ -40,7 +40,7 @@ module "lambda-scheduler" {
   schedule_tag_force = "true"
   ec2_schedule = "true"
   rds_schedule = "true"
-  default = "{\"mon\": {\"start\": 7, \"stop\": 20},\"tue\": {\"start\": 7, \"stop\": 20},\"wed\": {\"start\": 7, \"stop\": 20},\"thu\": {\"start\": 7, \"stop\": 20}, \"fri\": {\"start\": 7, \"stop\": 20}}"
+  default = "{\"mon\": {\"start\": [7], \"stop\": [19]},\"tue\": {\"start\": [7], \"stop\": [19]},\"wed\": {\"start\": [9, 22], \"stop\": [19]},\"thu\": {\"start\": [7], \"stop\": [2,19]}, \"fri\": {\"start\": [7], \"stop\": [19]}, \"sat\": {\"start\": [22]}, \"sun\": {\"stop\": [7]}}"
   time = "Europe/London"
 }
 ```
@@ -70,10 +70,14 @@ NOTE: On a RDS instance the tag is converted to a string of keyword parameters s
 "mon_start=7 mon_stop=20"
 ```
 because of restrictions in the characters the tags on RDS instance support.
+To support multiple stop/start times per day, separate the hours with a /. Example shows an instance that starts at 7, turns off at 19, then turns back on again from 22 to 1 the next day for weekly maintenance.
+```
+"mon_start=7/22 mon_stop=19 tue_start=7 tue_stop=1/19"
+```
 
 Default for default is:
 ```json
-{"mon": {"start": 7, "stop": 20},"tue": {"start": 7, "stop": 20},"wed": {"start": 7, "stop": 20},"thu": {"start": 7, "stop": 20}, "fri": {"start": 7, "stop": 20}}
+{"mon": {"start": [7], "stop": [19]},"tue": {"start": [7], "stop": [19]},"wed": {"start": [9, 22], "stop": [19]},"thu": {"start": [7], "stop": [2,19]}, "fri": {"start": [7], "stop": [19]}, "sat": {"start": [22]}, "sun": {"stop": [7]}}
 ```
 
 ### time
