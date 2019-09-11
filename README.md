@@ -8,12 +8,14 @@ It works by setting a tag (default name schedule) to a string giving the stop an
 
 A schedule tag for an EC2 instance is json and looks like:
 ```json
-{"mon": {"start": [7], "stop": [19]},"tue": {"start": [7], "stop": [19]},"wed": {"start": [9, 22], "stop": [19]},"thu": {"start": [7], "stop": [2,19]}, "fri": {"start": [7], "stop": [19]}, "sat": {"start": [22]}, "sun": {"stop": [7]}}
+{"mon": {"start": 7, "stop": 19},"tue": {"start": 7, "stop": 19},"wed": {"start": [9, 22], "stop": 19},"thu": {"start": 7, "stop": [2,19]}, "fri": {"start": 7, "stop": 19}, "sat": {"start": 22}, "sun": {"stop": 7}}
 ```
+If you want to handle multiple stop/starts per day, you will need to pass a list in the start/stop schedule.
 
-On a RDS instance the schedule tag is a string of keyword parameters separated by a space.
+
+On a RDS instance the schedule tag is a string of keyword parameters separated by a space. To support multiple stop/start times per day, separate the hours with a `/`.
 ```
-"mon_start=7 mon_stop=20 tue_start=7 tue_stop=20 wed_start=7 wed_stop=20 thu_start=7 thu_stop=20 fri_start=7 fri_stop=20"
+"mon_start=7 mon_stop=20 tue_start=7 tue_stop=20 wed_start=7/22 wed_stop=20 thu_start=7 thu_stop=2/20 fri_start=7 fri_stop=20"
 ```
 NOTE: This is because of restrictions in the characters the tags on RDS instance support.
 

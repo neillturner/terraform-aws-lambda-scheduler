@@ -113,30 +113,40 @@ def check():
             schedule = json.loads(data)
 
             try:
-                if hh in schedule[day]['start']:
+                schedule_start = []
+                if type(schedule[day]['start']) is list:
+                    schedule_start = schedule[day]['start']
+                else:
+                    schedule_start = [schedule[day]['start']]
+                if hh in schedule_start:
                     logger.info("Start time matches")
                 if instance.state["Name"] == 'running':
                     logger.info("EC2 instance \"%s\" is already running." %(instance.id))
-                if hh in schedule[day]['start'] and not instance.state["Name"] == 'running':
+                if hh in schedule_start and not instance.state["Name"] == 'running':
                     logger.info("Starting EC2 instance \"%s\"." %(instance.id))
                     started.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).start()
             except Exception as e:
                 logger.error("Error checking start time : %s" % e)
-                pass # catch exception if 'start' is not in schedule.
+                pass  # catch exception if 'start' is not in schedule.
 
             try:
-                if hh in schedule[day]['stop']:
+                schedule_stop = []
+                if type(schedule[day]['stop']) is list:
+                    schedule_stop = schedule[day]['stop']
+                else:
+                    schedule_stop = [schedule[day]['stop']]
+                if hh in schedule_stop:
                     logger.info("Stop time matches")
                 if instance.state["Name"] != 'running':
                     logger.info("EC2 instance \"%s\" is not running." %(instance.id))
-                if hh in schedule[day]['stop'] and instance.state["Name"] == 'running':
+                if hh in schedule_stop and instance.state["Name"] == 'running':
                     logger.info("Stopping EC2 instance \"%s\"." %(instance.id))
                     stopped.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).stop()
             except Exception as e:
                 logger.error("Error checking stop time : %s" % e)
-                pass # catch exception if 'stop' is not in schedule.
+                pass  # catch exception if 'stop' is not in schedule.
 
 
         except ValueError as e:
