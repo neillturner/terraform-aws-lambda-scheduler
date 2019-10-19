@@ -109,7 +109,7 @@ resource "aws_lambda_function" "scheduler_lambda" {
     function_name = "${var.resource_name_prefix}aws-scheduler"
     role = "${aws_iam_role.scheduler_lambda.arn}"
     handler = "aws-scheduler.handler"
-    runtime = "python2.7"
+    runtime = "python3.7"
     timeout = 300
     source_code_hash = "${data.archive_file.aws-scheduler.output_base64sha256}"
     vpc_config {
