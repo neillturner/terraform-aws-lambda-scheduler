@@ -58,6 +58,40 @@ def create_schedule_tag(instance):
         else:
             logger.info("No 'schedule' tag found on EC2 instance %s. Use create_schedule_tag_force option to create the tag automagically" % instance.id)
 
+# state = start | stop
+def checkdate(schedule, state, day, hh):
+
+    try:
+        schedule_data = []
+
+        if day in schedule.keys() and state in schedule[day]:
+            if type(schedule[day][state]) is list:
+                schedule_data = schedule[day][state]
+            else:
+                schedule_data = [schedule[day][state]]
+            logger.info("%s %s found." % (state, tag))
+
+        if 'daily' in schedule.keys() and state in schedule['daily']:
+            if type(schedule['daily'][state]) is list:
+                schedule_data.extend(schedule['daily'][state])
+            else:
+                schedule_data.extend([schedule['daily'][state]])
+
+        workdays = ['mon', 'tue', 'wed', 'thu', 'fri']
+        if day in workdays and 'workday' in schedule.keys() and state in schedule['workday']:
+            if type(schedule['workday'][state]) is list:
+                schedule_data.extend(schedule['workday'][state])
+            else:
+                schedule_data.extend([schedule['workday'][state]])
+
+        if hh in schedule_data:
+            logger.info("%s time matches" % state)
+            return True
+
+        return False
+    except Exception as e:
+        logger.error("Error checking %s time : %s" % (state, e))
+
 #
 # Loop EC2 instances and check if a 'schedule' tag has been set. Next, evaluate value and start/stop instance if needed.
 #
@@ -113,40 +147,28 @@ def check():
             schedule = json.loads(data)
 
             try:
-                schedule_start = []
-                if type(schedule[day]['start']) is list:
-                    schedule_start = schedule[day]['start']
-                else:
-                    schedule_start = [schedule[day]['start']]
-                if hh in schedule_start:
-                    logger.info("Start time matches")
                 if instance.state["Name"] == 'running':
                     logger.info("EC2 instance \"%s\" is already running." %(instance.id))
-                if hh in schedule_start and not instance.state["Name"] == 'running':
+
+                elif checkdate(schedule, 'start', day, hh):
+
                     logger.info("Starting EC2 instance \"%s\"." %(instance.id))
                     started.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).start()
             except Exception as e:
                 logger.error("Error checking start time : %s" % e)
-                pass  # catch exception if 'start' is not in schedule.
+                pass
 
             try:
-                schedule_stop = []
-                if type(schedule[day]['stop']) is list:
-                    schedule_stop = schedule[day]['stop']
-                else:
-                    schedule_stop = [schedule[day]['stop']]
-                if hh in schedule_stop:
-                    logger.info("Stop time matches")
                 if instance.state["Name"] != 'running':
                     logger.info("EC2 instance \"%s\" is not running." %(instance.id))
-                if hh in schedule_stop and instance.state["Name"] == 'running':
+
+                elif checkdate(schedule, 'stop', day, hh):
                     logger.info("Stopping EC2 instance \"%s\"." %(instance.id))
                     stopped.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).stop()
             except Exception as e:
                 logger.error("Error checking stop time : %s" % e)
-                pass  # catch exception if 'stop' is not in schedule.
 
 
         except ValueError as e:
