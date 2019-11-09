@@ -18,6 +18,7 @@ logger.info("rds_schedule is %s." % rds_schedule)
 ec2_schedule = os.getenv('EC2_SCHEDULE', 'True')
 ec2_schedule = ec2_schedule.capitalize()
 logger.info("ec2_schedule is %s." % ec2_schedule)
+debugmode = False
 
 def init():
     # Setup AWS connection
@@ -27,6 +28,10 @@ def init():
     logger.info("-----> Connecting to region \"%s\"", aws_region)
     ec2 = boto3.resource('ec2', region_name=aws_region)
     logger.info("-----> Connected to region \"%s\"", aws_region)
+
+def debugout(module, data):
+    if debugmode:
+        logger.info("DEBUG %s : %s" % (module, data))
 
 #
 # Add default 'schedule' tag to instance.
@@ -59,7 +64,42 @@ def create_schedule_tag(instance):
             logger.info("No 'schedule' tag found on EC2 instance %s. Use create_schedule_tag_force option to create the tag automagically" % instance.id)
 
 # state = start | stop
-def checkdate(schedule, state, day, hh):
+def checkdate(data, state, day, hh):
+    debugout('checkdate', "DEBUG checkdate state (%s) day (%s) hh (%s) data (%s)" % (state, day, hh, data))
+
+    try:
+        schedule = {}
+        if len(data) > 1 and data[0] == '{':
+            # JSON-Format
+            schedule = json.loads(data)
+            debugout('checkdate', 'JSON format found')
+        else:
+            # RDS-Format
+            try:
+                debugout('checkdate', "RDS format found")
+                # remove ' ' at atart and end, replace multiple ' ' with ' '
+                t=dict(x.split('=') for x in ' '.join(data.split()).split(' '))
+                for d in t.keys():
+                    dday, datastate=d.split('_')
+                    val=[int(i) for i in t[d].split('/')]
+                    debugout('checkdate', "RDS data: dday (%s) datastate (%s) val (%s)" %(dday, datastate, val))
+                    dstate={}
+                    dstate[datastate]=val
+                    if dday in schedule:
+                        schedule[dday].update(dstate)
+                    else:
+                        schedule[dday]=dstate
+
+            except Exception as e:
+                logger.error("Error checkdate : %s" % (e))
+
+        if debugout:
+            for d in schedule.keys():
+                for s in schedule[d].keys():
+                    debugout('checkdate', 'keys: day (%s) state (%s)' % (d, s))
+
+    except:
+        logger.error("Error checkdate invalid data : %s : %s" % (data, e))
 
     try:
         schedule_data = []
@@ -69,28 +109,33 @@ def checkdate(schedule, state, day, hh):
                 schedule_data = schedule[day][state]
             else:
                 schedule_data = [schedule[day][state]]
-            logger.info("%s %s found." % (state, tag))
+            debugout('checkdate', 'day schedule_data %s' % ', '.join(str(s) for s in schedule_data))
 
         if 'daily' in schedule.keys() and state in schedule['daily']:
             if type(schedule['daily'][state]) is list:
                 schedule_data.extend(schedule['daily'][state])
             else:
-                schedule_data.extend([schedule['daily'][state]])
+                schedule_data.extend([int(schedule['daily'][state])])
+            debugout('checkdate', 'daily schedule_data %s' % ', '.join(str(s) for s in schedule_data))
 
         workdays = ['mon', 'tue', 'wed', 'thu', 'fri']
         if day in workdays and 'workday' in schedule.keys() and state in schedule['workday']:
+            debugout('checkdate', 'workday found')
             if type(schedule['workday'][state]) is list:
                 schedule_data.extend(schedule['workday'][state])
             else:
                 schedule_data.extend([schedule['workday'][state]])
+            debugout('checkdate', 'workday schedule_data %s' % ', '.join(str(s) for s in schedule_data))
 
-        if hh in schedule_data:
-            logger.info("%s time matches" % state)
+        debugout('checkdate', 'len %i schedule_data %s' % (len(schedule_data), ','.join(str(s) for s in schedule_data)))
+
+        if int(hh) in schedule_data:
+            logger.info("checkdate %s time matches hh (%i)" % (state, int(hh)))
             return True
 
         return False
     except Exception as e:
-        logger.error("Error checking %s time : %s" % (state, e))
+        logger.error("Error checkdate %s time : %s" % (state, e))
 
 #
 # Loop EC2 instances and check if a 'schedule' tag has been set. Next, evaluate value and start/stop instance if needed.
@@ -132,7 +177,7 @@ def check():
         logger.error('Unable to find any EC2 Instances, please check configuration')
 
     for instance in instances:
-        logger.info("Evaluating EC2 instance \"%s\"", instance.id)
+        logger.info("-----> Evaluating EC2 instance \"%s\" state %s" % (instance.id, instance.state["Name"]))
 
         try:
             data = "{}"
@@ -144,13 +189,8 @@ def check():
                 # 'schedule' tag not found, create if appropriate.
                 create_schedule_tag(instance)
 
-            schedule = json.loads(data)
-
             try:
-                if instance.state["Name"] == 'running':
-                    logger.info("EC2 instance \"%s\" is already running." %(instance.id))
-
-                elif checkdate(schedule, 'start', day, hh):
+                if checkdate(data, 'start', day, hh) and instance.state["Name"] != 'running':
 
                     logger.info("Starting EC2 instance \"%s\"." %(instance.id))
                     started.append(instance.id)
@@ -160,10 +200,8 @@ def check():
                 pass
 
             try:
-                if instance.state["Name"] != 'running':
-                    logger.info("EC2 instance \"%s\" is not running." %(instance.id))
+                if checkdate(data, 'stop', day, hh) and instance.state["Name"] == 'running':
 
-                elif checkdate(schedule, 'stop', day, hh):
                     logger.info("Stopping EC2 instance \"%s\"." %(instance.id))
                     stopped.append(instance.id)
                     ec2.instances.filter(InstanceIds=[instance.id]).stop()
@@ -288,7 +326,7 @@ def rds_loop(rds_objects, hh, day, object_type):
         if 'DBInstanceStatus' not in instance: instance['DBInstanceStatus'] = ''
         if 'Status' not in instance: instance['Status'] = ''
         # instance = json.loads(db_instance)
-        logger.info("Evaluating RDS instance \"%s\"." %(instance['DB'+object_type+'Identifier']))
+        logger.info("-----> Evaluating RDS instance \"%s\" state: %s" % (instance['DB'+object_type+'Identifier'], instance['DBInstanceStatus']))
         response = rds.list_tags_for_resource(ResourceName=instance['DB'+object_type+'Arn'])
         taglist = response['TagList']
         try:
@@ -300,34 +338,23 @@ def rds_loop(rds_objects, hh, day, object_type):
             else:
                 rds_create_schedule_tag(instance, object_type)
 
-            if data == "":
-                schedule = []
-            else:
-                schedule = dict(x.split('=') for x in data.split(' '))
-
             try:
                 # Convert the start/stop hour into a list, in case of multiple values
-                hour_list = schedule[day+'_'+'start'].split('/')
-                if hh in hour_list and (instance['DBInstanceStatus'] == 'stopped' or instance['Status'] == 'stopped'):
-                    logger.info("Starting RDS instance \"%s\"." %(instance['DB'+object_type+'Identifier']))
+                if checkdate(data, 'start', day, hh) and (instance['DBInstanceStatus'] == 'stopped' or instance['Status'] == 'stopped'):
+
+                    logger.info("-----> Starting RDS instance \"%s\"." %(instance['DB'+object_type+'Identifier']))
                     started.append(instance['DB'+object_type+'Identifier'])
                     if object_type == 'Instance': rds.start_db_instance(DBInstanceIdentifier=instance['DB'+object_type+'Identifier'])
                     if object_type == 'Cluster': rds.start_db_cluster(DBClusterIdentifier=instance['DB'+object_type+'Identifier'])
-            except:
-                pass # catch exception if 'start' is not in schedule.
 
-            try:
-                hour_list = schedule[day+'_'+'stop'].split('/')
-                if hh in hour_list:
-                    logger.info("Stopping time matches")
-                if hh in hour_list and (instance['DBInstanceStatus'] == 'available' or instance['Status'] == 'available'):
-                    logger.info("Stopping RDS instance \"%s\"." %(instance['DB'+object_type+'Identifier']))
+                elif checkdate(data, 'stop', day, hh) and (instance['DBInstanceStatus'] == 'available' or instance['Status'] == 'available'):
+                    logger.info("-----> Stopping RDS instance \"%s\"." %(instance['DB'+object_type+'Identifier']))
                     stopped.append(instance['DB'+object_type+'Identifier'])
                     if object_type == 'Instance': rds.stop_db_instance(DBInstanceIdentifier=instance['DB'+object_type+'Identifier'])
                     if object_type == 'Cluster': rds.stop_db_cluster(DBClusterIdentifier=instance['DB'+object_type+'Identifier'])
-            except:
+            except Exception as e:
+                logger.info("ERROR rds_loop \"%s\" " % (e))
                 pass # catch exception if 'stop' is not in schedule.
-
 
         except ValueError as e:
             # invalid JSON
