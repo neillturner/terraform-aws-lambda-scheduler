@@ -225,10 +225,14 @@ def flattenjson( b, delim ):
 def dict_to_string( d ):
     val = ""
     for k, v in d.items():
-         if len(val) == 0 :
-             val=k+"="+str(v)
+         if type(v) is list:
+             vs='/'.join(str(s) for s in v)
          else:
-             val=val+" "+k+"="+str(v)
+             vs=v
+         if len(val) == 0 :
+             val=k+"="+str(vs)
+         else:
+             val=val+" "+k+"="+str(vs)
 
     return val
 
