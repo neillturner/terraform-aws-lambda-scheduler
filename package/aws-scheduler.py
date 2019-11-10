@@ -69,13 +69,17 @@ def checkdate(data, state, day, hh):
 
     try:
         schedule = {}
-        if len(data) > 1 and data[0] == '{':
+        if data == '':
+            debugout('checkdate', "data is empty")
+            return False
+        elif len(data) > 1 and data[0] == '{':
             # JSON-Format
+            debugout('checkdate', 'JSON format found. (%s)' % data)
             schedule = json.loads(data)
-            debugout('checkdate', 'JSON format found')
         else:
             # RDS-Format
             try:
+
                 debugout('checkdate', "RDS format found")
                 # remove ' ' at atart and end, replace multiple ' ' with ' '
                 t=dict(x.split('=') for x in ' '.join(data.split()).split(' '))
