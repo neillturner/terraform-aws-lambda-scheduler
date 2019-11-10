@@ -238,9 +238,15 @@ def rds_create_schedule_tag(instance, object_type):
             schedule_tag =  os.getenv('TAG', 'schedule')
             tag_default =  os.getenv('DEFAULT', '{"mon": {"start": 7, "stop": 20},"tue": {"start": 7, "stop": 20},"wed": {"start": 7, "stop": 20},"thu": {"start": 7, "stop": 20}, "fri": {"start": 7, "stop": 20}}')
             logger.info("json tag_value: %s" % tag_default)
-            tag = json.loads(tag_default)
-            tag_dict = flattenjson(tag, "_")
-            tag_value= dict_to_string(tag_dict)
+
+            if len(tag_default) > 1 and tag_default[0] == '{':
+                tag = json.loads(tag_default)
+                tag_dict = flattenjson(tag, "_")
+                tag_value= dict_to_string(tag_dict)
+            else:
+                # use default string without convert to JSON
+                tag_value=tag_default
+
             logger.info("About to create %s tag on RDS instance %s with value: %s" % (schedule_tag,instance['DBInstanceIdentifier'],tag_value))
             tags = [{
                 "Key" : schedule_tag,
