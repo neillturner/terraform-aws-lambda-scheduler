@@ -18,7 +18,7 @@ with multiple times for stoppping an instance, because a value
 of a tag is limitted to 254 characters.
 The data from daily or workday will be added to any possible existing data of the weekday.
 
-Example:```json
+Example:
 ```json
 {"daily": {"stop": [19,23,4]}, "sat": {"stop": 15},"sun": {"stop": [15]}}
 ```
