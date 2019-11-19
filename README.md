@@ -10,14 +10,27 @@ A schedule tag for an EC2 instance is json and looks like:
 ```json
 {"mon": {"start": 7, "stop": 19},"tue": {"start": 7, "stop": 19},"wed": {"start": [9, 22], "stop": 19},"thu": {"start": 7, "stop": [2,19]}, "fri": {"start": 7, "stop": 19}, "sat": {"start": 22}, "sun": {"stop": 7}}
 ```
-If you want to handle multiple stop/starts per day, you will need to pass a list in the start/stop schedule.
+If you want to handle multiple stop/starts per day, you will need to pass a list in square brackets in the start/stop schedule.
 
+You can also use 'daily' and 'workday'. 'workday' is a placeholder for monday - friday.
+This allow a much smaller configuration in tags. It is needed for configurations
+with multiple times for stoppping an instance, because a value
+of a tag is limitted to 254 characters.
+The data from daily or workday will be added to any possible existing data of the weekday.
+
+Example:```json
+```json
+{"daily": {"stop": [19,23,4]}, "sat": {"stop": 15},"sun": {"stop": [15]}}
+```
+A stop is planned for 4,19 and 23 for each day - including the additional value for saturday and sunday.
 
 On a RDS instance the schedule tag is a string of keyword parameters separated by a space. To support multiple stop/start times per day, separate the hours with a `/`.
 ```
 "mon_start=7 mon_stop=20 tue_start=7 tue_stop=20 wed_start=7/22 wed_stop=20 thu_start=7 thu_stop=2/20 fri_start=7 fri_stop=20"
 ```
-NOTE: This is because of restrictions in the characters the tags on RDS instance support.
+NOTE: 
+* This is because of restrictions in the characters the tags on RDS instance support.
+* The configuration format from RDS can be used in EC2 as well. 
 
 The scheduler can be configured to add a default schedule tag to EC2 and RDS instances it finds without a schedule tag.
 It ignores instances that are part of autoscaling groups assuming scheduling actions can be used to stop and start these instances.
