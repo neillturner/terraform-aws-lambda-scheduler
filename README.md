@@ -38,7 +38,7 @@ It ignores instances that are part of autoscaling groups assuming scheduling act
 
 ## Requirements
 
-This module requires Terraform version `0.10.x` or newer.
+This module requires Terraform version `0.12.x` or newer.
 
 ## Dependencies
 
