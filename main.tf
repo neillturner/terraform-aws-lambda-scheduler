@@ -16,6 +16,7 @@ resource "aws_cloudwatch_event_target" "check-scheduler-event-lambda-target" {
 # IAM Role for Lambda function
 resource "aws_iam_role" "scheduler_lambda" {
   name               = "${var.resource_name_prefix}scheduler_lambda"
+  permissions_boundary = var.permissions_boundary != "" ? var.permissions_boundary : ""
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
