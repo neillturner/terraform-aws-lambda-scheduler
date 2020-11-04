@@ -14,6 +14,12 @@ variable "schedule_tag_force" {
   description = "Whether to force the EC2 or RDS instance to have the default schedule tag is no schedule tag exists for the instance."
 }
 
+variable "permissions_boundary" {
+  type 		  = string
+  default 	  = ""
+  description = "AWS IAM Permissions Boundary ARN to be attached to the IAM Role"
+}
+
 variable "exclude" {
   default     = ""
   description = "common separated list of EC2 and RDS instance ids to exclude from scheduling."

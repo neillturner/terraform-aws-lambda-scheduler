@@ -57,6 +57,7 @@ module "lambda-scheduler" {
   rds_schedule = "true"
   default = "{\"mon\": {\"start\": [7], \"stop\": [19]},\"tue\": {\"start\": [7], \"stop\": [19]},\"wed\": {\"start\": [9, 22], \"stop\": [19]},\"thu\": {\"start\": [7], \"stop\": [2,19]}, \"fri\": {\"start\": [7], \"stop\": [19]}, \"sat\": {\"start\": [22]}, \"sun\": {\"stop\": [7]}}"
   time = "Europe/London"
+  permissions_boundary = "arn:aws:iam::AWSACCTID:policy/optional-permissions-boundary-ARN"
 }
 ```
 ## variables
@@ -98,6 +99,9 @@ Default for default is:
 
 ### time
 Timezone to use for scheduler. Can be 'local', 'gmt' or an Olson timezone from https://gist.github.com/ykessler/3349954. default is 'gmt'. local time is for the AWS region.
+
+### permissions_boundary
+An optional AWS IAM permissions boundary ARN to be attached to the AWS IAM role. default = "".
 
 ### ec2_schedule
 Whether to do scheduling for EC2 instances. default = "true".
