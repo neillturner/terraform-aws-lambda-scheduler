@@ -1,2 +1,4 @@
 .terraform
 *.zip
+.idea
+.terraform.lock.hcl
